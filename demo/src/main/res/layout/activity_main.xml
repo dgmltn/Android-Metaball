@@ -69,29 +69,41 @@
                 app:mv_dotCount="5"
                 app:mv_dotRadius="8dp"
                 app:mv_selectedColor="#336699"
-                app:mv_unselectedColor="#20336699"
-                app:mv_isAnimated="true" />
+                app:mv_unselectedColor="#20336699" />
 
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             android:background="#10000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:background="#ccc"
+                android:padding="4dp"
+                android:text="ViewPager.DecorView"
+                android:textSize="12sp" />
 
             <android.support.v4.view.ViewPager
                 android:id="@+id/viewpager"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:background="@android:color/white" />
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:background="@android:color/white">
 
-            <com.dgmltn.metaball.ViewPagerMetaballView
-                android:id="@+id/viewpager_dots"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal" />
+                <com.dgmltn.metaball.ViewPagerMetaballView
+                    android:id="@+id/viewpager_dots"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal" />
+
+            </android.support.v4.view.ViewPager>
 
         </android.support.v7.widget.CardView>
 

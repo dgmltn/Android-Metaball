@@ -12,12 +12,22 @@ import java.lang.ref.WeakReference
  * Created by dmelton on 6/29/16.
  */
 
+@ViewPager.DecorView
 class ViewPagerMetaballView(context: Context, attrs: AttributeSet?) : MetaballView(context, attrs) {
 
     private var mViewPager: ViewPager? = null
     private var mPagerAdapter: PagerAdapter? = null
     private var mPagerAdapterObserver: DataSetObserver? = null
     private var mPageChangeListener: MetaballViewOnPageChangeListener? = null
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        if (parent is ViewPager && mViewPager == null) {
+            val p = parent as ViewPager
+            setupWithViewPager(p)
+        }
+    }
 
     /**
      * The one-stop shop for setting up this [ViewPagerMetaballView] with a [ViewPager].

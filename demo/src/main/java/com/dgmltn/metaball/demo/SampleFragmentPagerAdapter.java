@@ -1,22 +1,16 @@
 package com.dgmltn.metaball.demo;
 
-import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-/**
- * Created by dmelton on 6/29/16.
- */
-
 public class SampleFragmentPagerAdapter extends FragmentPagerAdapter {
-    final int PAGE_COUNT = 3;
-    private String tabTitles[] = new String[] { "Tab1", "Tab2", "Tab3" };
-    private Context context;
 
-    public SampleFragmentPagerAdapter(FragmentManager fm, Context context) {
+    private String tabTitles[] = new String[]{"Tab1", "Tab2", "Tab3", "Tab4"};
+    final int PAGE_COUNT = tabTitles.length;
+
+    public SampleFragmentPagerAdapter(FragmentManager fm) {
         super(fm);
-        this.context = context;
     }
 
     @Override
