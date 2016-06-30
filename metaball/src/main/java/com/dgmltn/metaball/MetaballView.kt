@@ -26,6 +26,10 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
      * Number of fixed dots.
      */
     var dotCount = 3
+    set(value) {
+        field = value
+        initDots()
+    }
 
     /**
      * Amount by which the thickness of the elastic band thins in the middle when it's stretched. 0f = no thinning.
@@ -112,12 +116,10 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
         }
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-
+    private fun initDots() {
         // Initialize the cursor
-        cursor.x = (w - paddingRight + paddingLeft - spacingPx * (dotCount - 1)) / 2f
-        cursor.y = (h - paddingBottom + paddingTop) / 2f
+        cursor.x = (width - paddingRight + paddingLeft - spacingPx * (dotCount - 1)) / 2f
+        cursor.y = (height - paddingBottom + paddingTop) / 2f
         cursor.radius = cursorRadius
 
         // Initialize/update the page dots
@@ -128,11 +130,15 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
             dots.removeAt(0)
         }
         for (i in 0..dotCount - 1) {
-            val c = dots[i]
             dots[i].x = spacingPx * i + cursor.x
             dots[i].y = cursor.y
             dots[i].radius = dotRadius
         }
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        initDots()
     }
 
     /**
