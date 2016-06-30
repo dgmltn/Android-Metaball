@@ -3,13 +3,11 @@ Android-Metaball
 
 [ ![Download](https://api.bintray.com/packages/dgmltn/maven/android-metaball/images/download.svg) ](https://bintray.com/dgmltn/maven/android-metaball/_latestVersion)
 
-![screenshot](https://raw.github.com/dgmltn/Android-Metaball/master/art/screenshot.png)
-
-## Summary
-
 A metaball "current page" indicator. AKA ViewPagerIndicator. These metaballs act like water droplets with surface tension. Physics FTW!
 
 This library was heavily inspired by [previous work](https://raw.githubusercontent.com/dodola/MetaballLoading/master/app/src/main/java/com/dodola/animview/MetaballView.java). Open Source FTW!
+
+![screenshot](https://raw.github.com/dgmltn/Android-Metaball/master/art/screenshot.png)
 
 ## Usage
 
