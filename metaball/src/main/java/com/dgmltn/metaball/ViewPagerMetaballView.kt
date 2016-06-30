@@ -15,15 +15,12 @@ import java.lang.ref.WeakReference
 @ViewPager.DecorView
 class ViewPagerMetaballView(context: Context, attrs: AttributeSet?) : MetaballView(context, attrs) {
 
-    private var mViewPager: ViewPager? = null
-    private var mPagerAdapter: PagerAdapter? = null
-    private var mPagerAdapterObserver: DataSetObserver? = null
-    private var mPageChangeListener: MetaballViewOnPageChangeListener? = null
+    private var pager: ViewPager? = null
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
-        if (parent is ViewPager && mViewPager == null) {
+        if (parent is ViewPager && pager == null) {
             val p = parent as ViewPager
             setupWithViewPager(p)
         }
@@ -46,46 +43,37 @@ class ViewPagerMetaballView(context: Context, attrs: AttributeSet?) : MetaballVi
      * If the given ViewPager is non-null, it needs to already have a
      * [PagerAdapter] set.
 
-     * @param viewPager The ViewPager to link, or `null` to clear any previous link.
+     * @param p The ViewPager to link, or `null` to clear any previous link.
      */
-    fun setupWithViewPager(viewPager: ViewPager?) {
-        if (mPageChangeListener != null) {
-            // If we've already been setup with a ViewPager, remove us from it
-            mViewPager?.removeOnPageChangeListener(mPageChangeListener)
-        }
+    fun setupWithViewPager(p: ViewPager?) {
+        pager?.removeOnPageChangeListener(listener)
 
-        if (viewPager != null) {
-            val adapter = viewPager.adapter ?: throw IllegalArgumentException("ViewPager does not have a PagerAdapter set")
-            mViewPager = viewPager
+        if (p != null) {
+            val adapter = p.adapter ?: throw IllegalArgumentException("ViewPager does not have a PagerAdapter set")
+            pager = p
             // Add our custom OnPageChangeListener to the ViewPager
-            if (mPageChangeListener == null) {
-                mPageChangeListener = MetaballViewOnPageChangeListener(this)
-            }
-            viewPager.addOnPageChangeListener(mPageChangeListener)
+            p.addOnPageChangeListener(listener)
             // Now we'll populate ourselves from the pager adapter
             setPagerAdapter(adapter, true)
-        }
-        else {
+        } else {
             // We've been given a null ViewPager so we need to clear out the internal state,
             // listeners and observers
-            mViewPager = null
+            pager = null
             setPagerAdapter(null, true)
         }
     }
 
     private fun setPagerAdapter(adapter: PagerAdapter?, addObserver: Boolean) {
-        if (mPagerAdapterObserver != null) {
+        try {
             // If we already have a PagerAdapter, unregister our observer
-            mPagerAdapter?.unregisterDataSetObserver(mPagerAdapterObserver)
+            pager?.adapter?.unregisterDataSetObserver(observer)
+        } catch (e: IllegalStateException) {
+            // Ignore "it wasn't registered" error.
         }
 
-        mPagerAdapter = adapter
-        if (addObserver && adapter != null) {
+        if (addObserver) {
             // Register our observer on the new adapter
-            if (mPagerAdapterObserver == null) {
-                mPagerAdapterObserver = PagerAdapterObserver()
-            }
-            adapter.registerDataSetObserver(mPagerAdapterObserver)
+            adapter?.registerDataSetObserver(observer)
         }
 
         // Finally make sure we reflect the new adapter
@@ -96,31 +84,25 @@ class ViewPagerMetaballView(context: Context, attrs: AttributeSet?) : MetaballVi
      * A [ViewPager.OnPageChangeListener] class which contains the
      * necessary calls back to the provided [ViewPagerMetaballView] so that the tab position is
      * kept in sync.
-
-     *
-     * This class stores the provided TabLayout weakly, meaning that you can use
-     * [ addOnPageChangeListener(OnPageChangeListener)][ViewPager.addOnPageChangeListener] without removing the listener and
-     * not cause a leak.
      */
-    private class MetaballViewOnPageChangeListener(view: ViewPagerMetaballView) : ViewPager.OnPageChangeListener {
-
-        private val mMetaballView = WeakReference(view)
+    private val listener = object : ViewPager.OnPageChangeListener {
 
         override fun onPageScrollStateChanged(state: Int) {
         }
 
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-            val view = mMetaballView.get()
-            view?.cursorPosition = position + positionOffset
+            cursorPosition = position + positionOffset
         }
 
         override fun onPageSelected(position: Int) {
-            val view = mMetaballView.get()
-            view?.connectedIndex = position
+            connectedIndex = position
         }
     }
 
-    private inner class PagerAdapterObserver : DataSetObserver() {
+    /**
+     * A [DataSetObserver] that'll change the number of dots if the number of pages changes.
+     */
+    private val observer = object : DataSetObserver() {
         override fun onChanged() {
             populateFromPagerAdapter()
         }
@@ -131,8 +113,8 @@ class ViewPagerMetaballView(context: Context, attrs: AttributeSet?) : MetaballVi
     }
 
     private fun populateFromPagerAdapter() {
-        dotCount = mPagerAdapter?.count ?: 0
-        val curItem = mViewPager?.currentItem ?: 0
+        dotCount = pager?.adapter?.count ?: 0
+        val curItem = pager?.currentItem ?: 0
         connectedIndex = curItem
         cursorPosition = curItem.toFloat()
     }
