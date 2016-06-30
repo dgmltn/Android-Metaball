@@ -74,5 +74,26 @@
 
         </android.support.v7.widget.CardView>
 
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:background="#10000000">
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:background="@android:color/white" />
+
+            <com.dgmltn.metaball.ViewPagerMetaballView
+                android:id="@+id/viewpager_dots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal" />
+
+        </android.support.v7.widget.CardView>
+
     </LinearLayout>
 </ScrollView>

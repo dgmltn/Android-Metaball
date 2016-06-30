@@ -9,7 +9,7 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 
-class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
+open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     /**
      * Radius of the fixed dots.
@@ -57,7 +57,11 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
     /**
      * Which fixed circle is currently connected to the cursor via surface tension?
      */
-    private var connectedIndex = 0
+    var connectedIndex = 0
+    set(value) {
+        field = value
+        invalidate()
+    }
 
     /**
      * The scaled x-position of the cursor. 0f = centered on the first circle,
@@ -70,7 +74,6 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
             if (dots.size > 0) {
                 cursor.x = spacingPx * t + dots[0].x
             }
-            connectedIndex = Math.round(t)
             invalidate()
         }
 
