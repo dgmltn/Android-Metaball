@@ -6,6 +6,8 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
 
+    resourcePrefix 'mv_'
+
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 23

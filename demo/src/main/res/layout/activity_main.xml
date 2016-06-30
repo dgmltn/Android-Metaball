@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -29,7 +30,7 @@
                 android:layout_gravity="top|left"
                 android:background="#ccc"
                 android:padding="4dp"
-                android:text="Three Dots"
+                android:text="Default Values"
                 android:textSize="12sp" />
 
             <com.dgmltn.metaball.MetaballView
@@ -39,6 +40,37 @@
                 android:layout_marginBottom="12dp"
                 android:layout_marginTop="24dp"
                 android:background="#20000000" />
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
+            android:background="#10000000">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:background="#ccc"
+                android:padding="4dp"
+                android:text="Custom Values"
+                android:textSize="12sp" />
+
+            <com.dgmltn.metaball.MetaballView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="12dp"
+                android:layout_marginTop="24dp"
+                android:background="#20000000"
+                app:mv_dotCount="5"
+                app:mv_dotRadius="8dp"
+                app:mv_selectedColor="#336699"
+                app:mv_unselectedColor="#20336699"
+                app:mv_isAnimated="true" />
 
         </android.support.v7.widget.CardView>
 

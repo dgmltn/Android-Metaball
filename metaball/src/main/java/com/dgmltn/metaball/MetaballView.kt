@@ -2,8 +2,6 @@ package com.dgmltn.metaball
 
 import java.util.ArrayList
 
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -11,21 +9,18 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.View
 
-/**
- * Heavily inspired by:
- * https://raw.githubusercontent.com/dodola/MetaballLoading/master/app/src/main/java/com/dodola/animview/MetaballView.java
- */
 class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
-
-    /**
-     * Radius of the cursor dot.
-     */
-    private val cursorRadiusPx by lazy { resources.getDimension(R.dimen.default_radius) }
 
     /**
      * Radius of the fixed dots.
      */
-    private val fixedRadiusPx by lazy { cursorRadiusPx * 0.7f }
+    var dotRadius = resources.getDimension(R.dimen.mv_defaultRadius)
+
+    /**
+     * Radius of the cursor dot.
+     */
+    private val cursorRadius: Float
+        get() = dotRadius * 1.4f
 
     /**
      * Number of fixed dots.
@@ -40,12 +35,14 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
     /**
      * Number of pixels by which to space apart the fixed circles.
      */
-    private val spacingPx = cursorRadiusPx * 4f
+    private val spacingPx: Float
+        get() = cursorRadius * 4f
 
     /**
      * Maximum length of the band, before it snaps
      */
-    private val bandMaxLength = spacingPx
+    private val bandMaxLength: Float
+        get() = spacingPx
 
     /**
      * Rate at which to scale the fixed circle due to the proximity of the cursor.
@@ -58,14 +55,9 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
     private val bandThickness = 0.5f
 
     /**
-     * The fixed circle that is currently connected to the cursor.
+     * Which fixed circle is currently connected to the cursor via surface tension?
      */
-    var connectedIndex = 0
-
-    /**
-     * Whether or not the cursor is animated.
-     */
-    private val isAnimated = false
+    private var connectedIndex = 0
 
     /**
      * The scaled x-position of the cursor. 0f = centered on the first circle,
@@ -78,6 +70,7 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
             if (dots.size > 0) {
                 cursor.x = spacingPx * t + dots[0].x
             }
+            connectedIndex = Math.round(t)
             invalidate()
         }
 
@@ -86,21 +79,34 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
     private val dots = ArrayList<Circle>()
 
     // Cached variables used during onDraw
-    private val paint = Paint()
-    private val paint2 = Paint()
+    private val paint by lazy {
+        val it = Paint()
+        it.color = resources.getColor(R.color.dotSelected)
+        it.style = Paint.Style.FILL
+        it.isAntiAlias = true
+        it
+    }
+
+    private val paint2 by lazy {
+        val it = Paint()
+        it.color = resources.getColor(R.color.dotUnselected)
+        it.style = Paint.Style.FILL
+        it.isAntiAlias = true
+        it
+    }
+
     private val path1 = Path()
 
     init {
-        // Paint for both the page dots, and the cursor
-        paint.color = resources.getColor(R.color.dotSelected)
-        paint.style = Paint.Style.FILL
-        paint.isAntiAlias = true
+        if (attrs != null) {
+            val ta = context.obtainStyledAttributes(attrs, R.styleable.mv_MetaballView, 0, 0)
+            paint.color = ta.getColor(R.styleable.mv_MetaballView_mv_selectedColor, paint.color)
+            paint2.color = ta.getColor(R.styleable.mv_MetaballView_mv_unselectedColor, paint2.color)
+            dotRadius = ta.getDimension(R.styleable.mv_MetaballView_mv_dotRadius, dotRadius)
+            dotCount = ta.getInt(R.styleable.mv_MetaballView_mv_dotCount, dotCount)
 
-        paint2.color = resources.getColor(R.color.dotUnselected)
-        paint.style = Paint.Style.FILL
-        paint.isAntiAlias = true
-
-        setPaintMode(1)
+            ta.recycle()
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -109,7 +115,7 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
         // Initialize the cursor
         cursor.x = (w - paddingRight + paddingLeft - spacingPx * (dotCount - 1)) / 2f
         cursor.y = (h - paddingBottom + paddingTop) / 2f
-        cursor.radius = cursorRadiusPx
+        cursor.radius = cursorRadius
 
         // Initialize/update the page dots
         while (dots.size < dotCount) {
@@ -122,13 +128,8 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
             val c = dots[i]
             dots[i].x = spacingPx * i + cursor.x
             dots[i].y = cursor.y
-            dots[i].radius = fixedRadiusPx
+            dots[i].radius = dotRadius
         }
-    }
-
-    fun setPaintMode(mode: Int) {
-        paint.style = if (mode == 0) Paint.Style.STROKE else Paint.Style.FILL
-        invalidate()
     }
 
     /**
@@ -182,8 +183,7 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
         if (d < radius1 + radius2) {
             u1 = Math.acos(((radius1 * radius1 + d * d - radius2 * radius2) / (2f * radius1 * d)).toDouble()).toFloat()
             u2 = Math.acos(((radius2 * radius2 + d * d - radius1 * radius1) / (2f * radius2 * d)).toDouble()).toFloat()
-        }
-        else {
+        } else {
             u1 = 0f
             u2 = 0f
         }
@@ -249,8 +249,7 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
         while (i < l) {
             if (i == connectedIndex) {
                 metaball(canvas, paint, dots[i], cursor)
-            }
-            else {
+            } else {
                 dots[i].draw(canvas, paint2)
             }
             i++
@@ -259,43 +258,8 @@ class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         setMeasuredDimension(
-                View.resolveSizeAndState((dotCount * (cursorRadiusPx * 2 + spacingPx)).toInt(), widthMeasureSpec, 0),
-                View.resolveSizeAndState((2f * cursorRadiusPx * 1.4f).toInt(), heightMeasureSpec, 0))
-    }
-
-    override fun onVisibilityChanged(changedView: View, visibility: Int) {
-        super.onVisibilityChanged(changedView, visibility)
-
-        if (visibility == View.GONE || visibility == View.INVISIBLE) {
-            stopAnimation()
-        }
-        else if (isAnimated) {
-            startAnimation()
-        }
-    }
-
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        if (isAnimated) {
-            startAnimation()
-        }
-    }
-
-    override fun onDetachedFromWindow() {
-        stopAnimation()
-        super.onDetachedFromWindow()
-    }
-
-    private fun stopAnimation() {
-        clearAnimation()
-        postInvalidate()
-    }
-
-    private fun startAnimation() {
-        val anim = ObjectAnimator.ofFloat(this, "cursorPosition", 0f, dotCount - 1f).setDuration(2500)
-        anim.repeatCount = ValueAnimator.INFINITE
-        anim.repeatMode = ValueAnimator.REVERSE
-        anim.start()
+                View.resolveSizeAndState((dotCount * (cursorRadius * 2 + spacingPx)).toInt(), widthMeasureSpec, 0),
+                View.resolveSizeAndState((2f * cursorRadius * 1.4f).toInt(), heightMeasureSpec, 0))
     }
 
     private class Circle(var x: Float = 0f, var y: Float = 0f, var radius: Float = 1f) {

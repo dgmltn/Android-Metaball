@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="MetaballView">
+    <declare-styleable name="mv_MetaballView">
+        <attr name="mv_selectedColor" format="color" />
+        <attr name="mv_unselectedColor" format="color" />
+        <attr name="mv_dotRadius" format="dimension" />
+        <attr name="mv_dotCount" format="integer" />
+        <attr name="mv_isAnimated" format="boolean" />
     </declare-styleable>
 
 </resources>
