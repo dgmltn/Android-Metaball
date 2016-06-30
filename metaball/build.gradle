@@ -1,7 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -43,6 +42,7 @@ task sourceJar(type: Jar) {
 
 task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
+    excludes = ['**/*.kt']
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
@@ -76,6 +76,8 @@ bintray {
     pkg {
         repo = 'maven'
         name = rootProject.ext.bintrayArtifactId
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/dgmltn/Android-Metaball.git'
         version {
             name = rootProject.ext.libraryVersion
             vcsTag = rootProject.ext.libraryVersion
