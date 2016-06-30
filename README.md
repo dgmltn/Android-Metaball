@@ -13,6 +13,7 @@ This library was heavily inspired by [previous work](https://raw.githubuserconte
 
 ## Usage
 
+```xml
   <!-- As a standalone view with custom options -->
   <com.dgmltn.metaball.MetaballView
       android:layout_width="wrap_content"
@@ -40,6 +41,7 @@ This library was heavily inspired by [previous work](https://raw.githubuserconte
           android:layout_gravity="bottom|center_horizontal" />
 
   </android.support.v4.view.ViewPager>
+```
 
 ## Obtaining
 
