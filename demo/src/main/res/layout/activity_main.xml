@@ -97,7 +97,7 @@
                 android:layout_marginBottom="8dp"
                 android:background="@android:color/white">
 
-                <com.dgmltn.metaball.ViewPagerMetaballView
+                <com.dgmltn.metaball.MetaballView
                     android:id="@+id/viewpager_dots"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

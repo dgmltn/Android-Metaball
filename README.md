@@ -32,7 +32,7 @@ This library was heavily inspired by [previous work](https://raw.githubuserconte
       android:layout_height="64dp"
       android:background="@android:color/white">
 
-      <com.dgmltn.metaball.ViewPagerMetaballView
+      <com.dgmltn.metaball.MetaballView
           android:id="@+id/viewpager_dots"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
@@ -45,7 +45,7 @@ This library was heavily inspired by [previous work](https://raw.githubuserconte
 
 Include in your android project from jcenter, using Gradle:
 ```groovy
-compile 'com.dgmltn:android-metaball:1.1.0'
+compile 'com.dgmltn:android-metaball:1.2.0'
 ```
 
 ## License

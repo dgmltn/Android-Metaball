@@ -3,12 +3,15 @@ package com.dgmltn.metaball
 import java.util.ArrayList
 
 import android.content.Context
+import android.database.DataSetObserver
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
+import android.support.v4.view.ViewPager
 import android.util.AttributeSet
 import android.view.View
 
+@ViewPager.DecorView
 open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 
     /**
@@ -26,10 +29,10 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
      * Number of fixed dots.
      */
     var dotCount = 3
-    set(value) {
-        field = value
-        initDots()
-    }
+        set(value) {
+            field = value
+            initDots()
+        }
 
     /**
      * Amount by which the thickness of the elastic band thins in the middle when it's stretched. 0f = no thinning.
@@ -62,10 +65,10 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
      * Which fixed circle is currently connected to the cursor via surface tension?
      */
     var connectedIndex = 0
-    set(value) {
-        field = value
-        invalidate()
-    }
+        set(value) {
+            field = value
+            invalidate()
+        }
 
     /**
      * The scaled x-position of the cursor. 0f = centered on the first circle,
@@ -116,6 +119,20 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
         }
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        val p = parent
+        if (p is ViewPager) {
+            viewPagerHelper = ViewPagerHelper(p)
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        viewPagerHelper?.detach()
+    }
+
     private fun initDots() {
         // Initialize the cursor
         cursor.x = (width - paddingRight + paddingLeft - spacingPx * (dotCount - 1)) / 2f
@@ -140,6 +157,32 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
         super.onSizeChanged(w, h, oldw, oldh)
         initDots()
     }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+
+        // Draw the page dots
+        var i = 0
+        val l = dots.size
+        while (i < l) {
+            if (i == connectedIndex) {
+                metaball(canvas, paint, dots[i], cursor)
+            } else {
+                dots[i].draw(canvas, paint2)
+            }
+            i++
+        }
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        setMeasuredDimension(
+                View.resolveSizeAndState((dotCount * (cursorRadius * 2 + spacingPx)).toInt(), widthMeasureSpec, 0),
+                View.resolveSizeAndState((2f * cursorRadius * 1.4f).toInt(), heightMeasureSpec, 0))
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Main drawring method
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * @param canvas       canvas
@@ -249,27 +292,9 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
         canvas.drawPath(path1, paint)
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-
-        // Draw the page dots
-        var i = 0
-        val l = dots.size
-        while (i < l) {
-            if (i == connectedIndex) {
-                metaball(canvas, paint, dots[i], cursor)
-            } else {
-                dots[i].draw(canvas, paint2)
-            }
-            i++
-        }
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        setMeasuredDimension(
-                View.resolveSizeAndState((dotCount * (cursorRadius * 2 + spacingPx)).toInt(), widthMeasureSpec, 0),
-                View.resolveSizeAndState((2f * cursorRadius * 1.4f).toInt(), heightMeasureSpec, 0))
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Static helpers
+    ///////////////////////////////////////////////////////////////////////////
 
     private class Circle(var x: Float = 0f, var y: Float = 0f, var radius: Float = 1f) {
 
@@ -292,10 +317,6 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
 
         private val PI2 = (Math.PI / 2.0).toFloat()
 
-        ///////////////////////////////////////////////////////////////////////////
-        // Utilities
-        ///////////////////////////////////////////////////////////////////////////
-
         private fun getLength(b: FloatArray): Float {
             return Math.sqrt((b[0] * b[0] + b[1] * b[1]).toDouble()).toFloat()
         }
@@ -306,4 +327,78 @@ open class MetaballView(context: Context, attrs: AttributeSet?) : View(context, 
             return floatArrayOf(x, y)
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // ViewPager helper
+    ///////////////////////////////////////////////////////////////////////////
+
+    private var viewPagerHelper: ViewPagerHelper? = null
+
+    /**
+     * All the listeners having to do with hooking the MetaballView up to a ViewPager. Initializing
+     * an instance of this class attaches all the appropriate listeners.
+     */
+    private inner class ViewPagerHelper(val pager: ViewPager) {
+
+        /**
+         * A [ViewPager.OnAdapterChangeListener] object that updates the dots if the ViewPager's adapter changes.
+         */
+        private val adapterChangeListener = ViewPager.OnAdapterChangeListener { viewPager, oldAdapter, newAdapter ->
+            oldAdapter?.unregisterDataSetObserver(observer)
+            newAdapter?.registerDataSetObserver(observer)
+            populateFromPagerAdapter()
+        }
+
+        /**
+         * A [ViewPager.OnPageChangeListener] object to keep the dot position in sync.
+         */
+        private val pageChangeListener = object : ViewPager.OnPageChangeListener {
+
+            override fun onPageScrollStateChanged(state: Int) {
+            }
+
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+                cursorPosition = position + positionOffset
+            }
+
+            override fun onPageSelected(position: Int) {
+                connectedIndex = position
+            }
+        }
+
+        init {
+            pager.removeOnAdapterChangeListener(adapterChangeListener)
+            pager.addOnAdapterChangeListener(adapterChangeListener)
+            pager.removeOnPageChangeListener(pageChangeListener)
+            pager.addOnPageChangeListener(pageChangeListener)
+            populateFromPagerAdapter()
+        }
+
+        /**
+         * A [DataSetObserver] that'll change the number of dots if the number of pages changes.
+         */
+        private val observer = object : DataSetObserver() {
+            override fun onChanged() {
+                populateFromPagerAdapter()
+            }
+
+            override fun onInvalidated() {
+                populateFromPagerAdapter()
+            }
+        }
+
+        private fun populateFromPagerAdapter() {
+            dotCount = pager.adapter?.count ?: 0
+            val curItem = pager.currentItem
+            connectedIndex = curItem
+            cursorPosition = curItem.toFloat()
+            requestLayout()
+        }
+
+        fun detach() {
+            pager.removeOnAdapterChangeListener(adapterChangeListener)
+            pager.removeOnPageChangeListener(pageChangeListener)
+        }
+    }
+
 }
