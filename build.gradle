@@ -14,7 +14,7 @@ buildscript {
 
 ext.compileSdkVersion = 23
 ext.buildToolsVersion = '23.0.2'
-ext.libraryVersion = '1.2.1-SNAPSHOT'
+ext.libraryVersion = '1.2.1'
 ext.libraryVersionCode = 1
 
 // Bintray configuration
