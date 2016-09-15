@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         minSdkVersion 19
-        targetSdkVersion 23
+        targetSdkVersion 24
         versionCode rootProject.ext.libraryVersionCode
         versionName rootProject.ext.libraryVersion
     }
@@ -19,15 +19,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:appcompat-v7:24.2.1'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'com.android.support:design:24.0.0'
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile 'com.android.support:design:24.2.1'
 }
 
 // Publish to Bintray
@@ -68,6 +66,19 @@ publishing {
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
+uploadArchives {
+    repositories {
+        apply plugin: 'maven'
+        mavenDeployer {
+            snapshotRepository(url: 'file://' + new File(System.getProperty('user.home'), 'LocalRepository/snapshots').absolutePath) { }
+
+            pom.version = rootProject.ext.libraryVersion
+            pom.artifactId = rootProject.ext.bintrayArtifactId
+            pom.groupId = rootProject.ext.bintrayGroupId
+        }
+    }
+}
+
 bintray {
     user = properties.getProperty("bintray.user")
     key = properties.getProperty("bintray.apikey")
@@ -83,7 +94,4 @@ bintray {
             vcsTag = rootProject.ext.libraryVersion
         }
     }
-}
-repositories {
-    mavenCentral()
 }
