@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -22,10 +21,7 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
 }
 
 // Publish to Bintray
@@ -40,7 +36,6 @@ task sourceJar(type: Jar) {
 
 task javadoc(type: Javadoc) {
     source = android.sourceSets.main.java.srcDirs
-    excludes = ['**/*.kt']
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
@@ -63,9 +58,6 @@ publishing {
     }
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
 uploadArchives {
     repositories {
         apply plugin: 'maven'
@@ -80,8 +72,8 @@ uploadArchives {
 }
 
 bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+    user = bintrayUser
+    key = bintrayApiKey
     publications = ['mavenJava']
     publish = true
     pkg {

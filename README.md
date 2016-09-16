@@ -45,7 +45,7 @@ This library was heavily inspired by [previous work](https://raw.githubuserconte
 
 Include in your android project from jcenter, using Gradle:
 ```groovy
-compile 'com.dgmltn:android-metaball:1.2.0'
+compile 'com.dgmltn:android-metaball:1.3.0'
 ```
 
 ## License
